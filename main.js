@@ -1,9 +1,8 @@
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
+const Store = require('electron-store').default;
 
-const Store = require('electron-store');
 const store = new Store();
-
 let win;
 
 function createWindow() {
