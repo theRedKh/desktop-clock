@@ -1,4 +1,4 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, Menu, clipboard } = require('electron');
 const path = require('path');
 const Store = require('electron-store').default;
 
@@ -41,4 +41,22 @@ app.whenReady().then(() => {
 
 app.on("window-all-closed", () => {
     if (process.platform !== "darwin") app.quit();
+});
+
+const settingsWindow = null;
+
+const contextMenu = Menu.buildFromTemplate([
+    {
+        label: 'Settings',
+        click: () => openSettingsWindow(),
+    },
+    {
+        label: "Quit",
+        click: () => app.quit(),
+    },
+]);
+
+//Right click on clock opens the menu
+win.webContents.on('context-menu', (e, params) => {
+    contextMenu.popup();
 });
