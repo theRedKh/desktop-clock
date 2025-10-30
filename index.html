@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Desktop Clock</title>
+    
+        <style>
+            body {
+                margin: 0;
+                background: transparent;
+                color: white;
+                font-family: sans-serif;
+                font-size: 32px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100%;
+                -webkit-app-region: drag; /* Enable dragging */
+            }
+        </style>
+    </head>
+    
+    <body>
+
+        <div id="clock">Loading...</div>
+
+        <script>
+            function updateTime() {
+                const now = new Date();
+                const time = now.toLocaleTimeString(undefined, { hour12: false });
+                const options = { weekday: "long" };
+                const day = new Intl.DateTimeFormat(undefined, options).format(now);
+                document.getElementById("clock").innerText = `${day} . ${time}`;
+            }
+            updateTime();
+            setInterval(updateTime, 500);
+        </script>
+    </body>
+</html>
