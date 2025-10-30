@@ -14,7 +14,7 @@ function createWindow() {
 
     win = new BrowserWindow({
         width: 250,
-        height: 80,
+        height: 400,
         x: savedPos.x,
         y: savedPos.y,
         frame: false,
@@ -23,6 +23,8 @@ function createWindow() {
         resizable: false,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'), // empty placeholder
+            nodeIntegration : true,
+            contextIsolation : false, // allows require in renderer
         },
     });
 
