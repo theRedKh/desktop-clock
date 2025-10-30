@@ -1,12 +1,16 @@
-const { app, BrowserWindow, Menu, clipboard } = require('electron');
-const path = require('path');
-const Store = require('electron-store').default;
+const { app, BrowserWindow, Menu, ipcMain } = require('electron'); //import electron modules
+const path = require('path'); //import path module
+const Store = require('electron-store').default; // main process needs .default
 
-const store = new Store();
-let win;
+const store = new Store(); // create a new store instance. store is local storage for electron
 
+let win; // main window
+let settingsWin; // settings window
+
+// Create the main application window
 function createWindow() {
     const savedPos = store.get("pos") || { x: 200, y: 200 };
+    const isAlwaysOnTop = store.get("alwaysOnTop", true);
 
     win = new BrowserWindow({
         width: 250,
@@ -15,53 +19,42 @@ function createWindow() {
         y: savedPos.y,
         frame: false,
         transparent: true,
-        alwaysOnTop: true,
+        alwaysOnTop: isAlwaysOnTop,
         resizable: false,
         webPreferences: {
-            preload: path.join(__dirname, 'preload.js'), //creating this later
+            preload: path.join(__dirname, 'preload.js'), // empty placeholder
         },
     });
+
     win.loadFile('index.html');
 
     win.on('move', () => {
         const [x, y] = win.getPosition();
         store.set("pos", { x, y });
     });
+
+    // Context menu after win is created
+    const contextMenu = Menu.buildFromTemplate([
+        {
+            label: 'Settings',
+            click: () => openSettingsWindow(),
+        },
+        {
+            label: "Quit",
+            click: () => app.quit(),
+        },
+    ]);
+
+    win.webContents.on('context-menu', (e, params) => {
+        contextMenu.popup();
+    });
 }
 
-app.whenReady().then(() => {
-    createWindow();
-
-    app.on('activate', () => {
-        if (BrowserWindow.getAllWindows().length === 0) {
-            createWindow();
-        }
-    });
+// IPC for Always on Top toggle
+ipcMain.on('toggle-always-on-top', (event, isOnTop) => {
+    if (win) win.setAlwaysOnTop(isOnTop);
+    store.set("alwaysOnTop", isOnTop);
 });
-
-app.on("window-all-closed", () => {
-    if (process.platform !== "darwin") app.quit();
-});
-
-const settingsWindow = null;
-
-const contextMenu = Menu.buildFromTemplate([
-    {
-        label: 'Settings',
-        click: () => openSettingsWindow(),
-    },
-    {
-        label: "Quit",
-        click: () => app.quit(),
-    },
-]);
-
-//Right click on clock opens the menu
-win.webContents.on('context-menu', (e, params) => {
-    contextMenu.popup();
-});
-
-let settingsWin;
 
 function openSettingsWindow() {
     if (settingsWin) {
@@ -76,12 +69,25 @@ function openSettingsWindow() {
         title: "Clock Settings",
         webPreferences: {
             nodeIntegration: true,
-            contextIsolation: false,
+            contextIsolation: false, // allows require in renderer
         },
     });
 
     settingsWin.loadFile('settings.html');
+
     settingsWin.on('closed', () => {
         settingsWin = null;
     });
 }
+
+app.whenReady().then(() => {
+    createWindow();
+
+    app.on('activate', () => {
+        if (BrowserWindow.getAllWindows().length === 0) createWindow();
+    });
+});
+
+app.on("window-all-closed", () => {
+    if (process.platform !== "darwin") app.quit();
+});
