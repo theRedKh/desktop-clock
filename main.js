@@ -1,12 +1,19 @@
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
 
+const Store = require('electron-store');
+const store = new Store();
+
 let win;
 
 function createWindow() {
+    const savedPos = store.get("pos") || { x: 200, y: 200 };
+
     win = new BrowserWindow({
         width: 250,
         height: 80,
+        x: savedPos.x,
+        y: savedPos.y,
         frame: false,
         transparent: true,
         alwaysOnTop: true,
@@ -16,6 +23,11 @@ function createWindow() {
         },
     });
     win.loadFile('index.html');
+
+    win.on('move', () => {
+        const [x, y] = win.getPosition();
+        store.set("pos", { x, y });
+    });
 }
 
 app.whenReady().then(() => {
