@@ -60,3 +60,28 @@ const contextMenu = Menu.buildFromTemplate([
 win.webContents.on('context-menu', (e, params) => {
     contextMenu.popup();
 });
+
+let settingsWin;
+
+function openSettingsWindow() {
+    if (settingsWin) {
+        settingsWin.focus();
+        return;
+    }
+
+    settingsWin = new BrowserWindow({
+        width: 300,
+        height: 200,
+        resizable: false,
+        title: "Clock Settings",
+        webPreferences: {
+            nodeIntegration: true,
+            contextIsolation: false,
+        },
+    });
+
+    settingsWin.loadFile('settings.html');
+    settingsWin.on('closed', () => {
+        settingsWin = null;
+    });
+}
