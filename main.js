@@ -1,13 +1,14 @@
-const { app, BrowserWindow, Menu, ipcMain } = require('electron'); //import electron modules
-const path = require('path'); //import path module
-const Store = require('electron-store').default; // main process needs .default
+// Menu / right-click context menu handling disabled (commented out below).
+// Original: const { app, BrowserWindow, Menu, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain } = require('electron');
+const path = require('path');
+const Store = require('electron-store').default;
 
-const store = new Store(); // create a new store instance. store is local storage for electron
+const store = new Store();
 
-let win; // main window
-let settingsWin; // settings window
+let win;
+let settingsWin;
 
-// Create the main application window
 function createWindow() {
     const savedPos = store.get("pos") || { x: 200, y: 200 };
     const isAlwaysOnTop = store.get("alwaysOnTop", true);
@@ -22,9 +23,8 @@ function createWindow() {
         alwaysOnTop: isAlwaysOnTop,
         resizable: false,
         webPreferences: {
-            preload: path.join(__dirname, 'preload.js'), // empty placeholder
-            nodeIntegration : true,
-            contextIsolation : false, // allows require in renderer
+            nodeIntegration: true,
+            contextIsolation: false,
         },
     });
 
@@ -35,28 +35,26 @@ function createWindow() {
         store.set("pos", { x, y });
     });
 
-    // Context menu after win is created
+    // Context menu building and popup are intentionally disabled to remove
+    // right-click menu functionality while keeping the clock running.
+    // (Original code left here as comments for easy re-enable.)
+    /*
     const contextMenu = Menu.buildFromTemplate([
         {
             label: 'Settings',
             click: () => openSettingsWindow(),
         },
         {
-            label: "Quit",
+            label: 'Quit',
             click: () => app.quit(),
         },
     ]);
 
-    win.webContents.on('context-menu', (e, params) => {
-        contextMenu.popup();
+    win.webContents.on('context-menu', () => {
+        contextMenu.popup({ window: win });
     });
+    */
 }
-
-// IPC for Always on Top toggle
-ipcMain.on('toggle-always-on-top', (event, isOnTop) => {
-    if (win) win.setAlwaysOnTop(isOnTop);
-    store.set("alwaysOnTop", isOnTop);
-});
 
 function openSettingsWindow() {
     if (settingsWin) {
@@ -71,7 +69,7 @@ function openSettingsWindow() {
         title: "Clock Settings",
         webPreferences: {
             nodeIntegration: true,
-            contextIsolation: false, // allows require in renderer
+            contextIsolation: false,
         },
     });
 
@@ -82,9 +80,23 @@ function openSettingsWindow() {
     });
 }
 
+// IPC — main process handles store + alwaysOnTop
+ipcMain.on('toggle-always-on-top', (event, isOnTop) => {
+    console.log('Received toggle from renderer:', isOnTop);
+    if (win) {
+        win.setAlwaysOnTop(isOnTop);
+        console.log('Always on Top set:', win.isAlwaysOnTop());
+    }
+    store.set('alwaysOnTop', isOnTop);
+
+    // Optional: send back confirmation to settings window
+    if (settingsWin) {
+        settingsWin.webContents.send('always-on-top-updated', isOnTop);
+    }
+});
+
 app.whenReady().then(() => {
     createWindow();
-
     app.on('activate', () => {
         if (BrowserWindow.getAllWindows().length === 0) createWindow();
     });

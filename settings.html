@@ -15,18 +15,20 @@
     <script>
         const { ipcRenderer } = require('electron');
 
-        const Store = require('electron-store'); // no .default in renderer
-        const store = new Store();
-
         const checkbox = document.getElementById('alwaysOnTop');
 
-        // Load saved setting
+        // Ask main process for current value
+        const Store = require('electron-store');
+        const store = new Store();
         checkbox.checked = store.get('alwaysOnTop', true);
 
         checkbox.addEventListener('change', () => {
-            const isOnTop = checkbox.checked;
-            store.set('alwaysOnTop', isOnTop);
-            ipcRenderer.send('toggle-always-on-top', isOnTop);
+            ipcRenderer.send('toggle-always-on-top', checkbox.checked);
+        });
+
+        // Optional: update checkbox if main process confirms
+        ipcRenderer.on('always-on-top-updated', (event, value) => {
+            checkbox.checked = value;
         });
     </script>
 </body>
