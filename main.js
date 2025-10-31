@@ -14,8 +14,8 @@ function createWindow() {
     const isAlwaysOnTop = store.get("alwaysOnTop", true);
 
     win = new BrowserWindow({
-        width: 250,
-        height: 400,
+        width: 500,
+        height: 260,
         x: savedPos.x,
         y: savedPos.y,
         frame: false,

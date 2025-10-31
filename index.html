@@ -1,73 +1,84 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="UTF-8">
-        <title>Desktop Clock</title>
-    
-        <style>
-            html, body {
-                margin: 0;
-                padding: 0;
-                background: transparent;
-                width: 100%;
-                height: 100%;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                font-family: sans-serif;
-                overflow: hidden;
-            }
-
-            #container {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                gap: 5px;
-            }
-
-            #drag-handle {
-                width: 80px;
-                height: 25px; /* taller */
-                border-radius: 8px;
-                background: rgba(255,255,255,0.3);
-                cursor: grab;
-                -webkit-app-region: drag;
-                opacity: 0;
-                transition: opacity 0.2s;
-            }
-
-            #container:hover #drag-handle {
-                opacity: 1;
-            }
-
-
-            #clock {
-                font-size: 32px;
-                color: white;
-                -webkit-app-region: no-drag;
-                user-select: none;
-            }
-        </style>
-    </head>
-    
-    <body>
-
-        <div id="container">
-            <div id="drag-handle"></div>
-            <div id="clock">Loading...</div>
-        </div>
+<head>
+    <meta charset="UTF-8">
+    <title>Desktop Clock</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
         
+        html, body {
+            margin: 0;
+            padding: 0;
+            background: transparent;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Press Start 2P', sans-serif;
+            overflow: hidden;
+        }
 
-        <script>
-            function updateTime() {
-                const now = new Date();
-                const time = now.toLocaleTimeString(undefined, { hour12: false });
-                const options = { weekday: "long" };
-                const day = new Intl.DateTimeFormat(undefined, options).format(now);
-                document.getElementById("clock").innerText = `${day} . ${time}`;
-            }
-            updateTime();
-            setInterval(updateTime, 500);
-        </script>
-    </body>
+        #container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #drag-handle {
+            width: 80px;
+            height: 25px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.3);
+            cursor: grab;
+            -webkit-app-region: drag;
+            opacity: 0;
+            transition: opacity 0.2s;
+            margin-bottom: 5px;
+        }
+
+        #container:hover #drag-handle {
+            opacity: 1;
+        }
+
+        #day {
+            font-family: 'Press Start 2P';
+            font-size: 60px;
+            color: rgb(255, 255, 255);
+            -webkit-app-region: no-drag;
+            user-select: none;
+            margin-bottom: 20px;
+        }
+
+        #time {
+            font-size: 50px;
+            color: white;
+            -webkit-app-region: no-drag;
+            user-select: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="drag-handle"></div>
+        <div id="day">MON</div>
+        <div id="time">00:00</div>
+    </div>
+
+    <script>
+        function updateClock() {
+            const now = new Date();
+            const hours = now.getHours().toString().padStart(2,'0');
+            const minutes = now.getMinutes().toString().padStart(2,'0');
+            const day = now.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
+
+            document.getElementById('day').textContent = day;
+            document.getElementById('time').textContent = `${hours}:${minutes}`;
+        }
+
+        setInterval(updateClock, 1000);
+        updateClock();
+    </script>
+</body>
 </html>
