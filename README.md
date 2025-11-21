@@ -6,6 +6,7 @@ Mostly built as a fun project lol
 ## 🎯This project taught me:
  - How does `Electron` package apps
  - How do we control browser window settings and customize them
+ - What is `pnpm` and how does it make my development process more efficient
 
 ## To make this project better, the next update will have:
  - Custom fonts
